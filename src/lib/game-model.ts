@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
+let __uid = 1;
+const getUniqueId = () => __uid++;
+
 /*
  * This model is a bit unusual, because we're going to need a
  * graph so that the solve algorithm can be performant, but
  * React would prefer to have things immutable and normalized. I call
  * this the Mullet Pattern. React in the front, OOP in the back. The hook
- * facilitates the transation of the two. The model implements an observer
+ * facilitates the transation of the two, while the model implements an observer
  * pattern so that react can be updated.
  */
 
@@ -29,7 +32,7 @@ class Game {
 }
 
 class Domino {
-  placement: [Cell, Cell] | null = null;
+  placement: { left: Cell; right: Cell } | null = null;
   id: number;
   left: number;
   right: number;
@@ -46,15 +49,11 @@ class Domino {
 
     this.left = leftValue;
     this.right = rightValue;
-    this.id = Domino.getUniqueId();
+    this.id = getUniqueId();
   }
 
   isPlaced() {
     return this.placement !== null;
-  }
-
-  static getUniqueId(): number {
-    throw "TODO";
   }
 }
 
@@ -80,6 +79,7 @@ type ConstraintRule =
   | { type: "sum-greater-than"; value: number };
 
 class Constraint {
+  id: number;
   color: string;
   rule: ConstraintRule;
   cells: Cell[];
@@ -88,6 +88,7 @@ class Constraint {
     this.color = color;
     this.rule = rule;
     this.cells = cells;
+    this.id = getUniqueId();
   }
 
   // If all cells are occupied, this tells us if the constraint is satisfied
@@ -102,6 +103,7 @@ type GameData = {
   freeDominos: { id: number; left: number; right: number }[];
   placedDominos: {
     id: number;
+    cell: { row: number; col: number };
     left: number;
     right: number;
     anchor: "left" | "right";
@@ -134,13 +136,13 @@ const useGame = (): GameData & GameActions => {
 
   useEffect(() => {
     // TODO: Load from localstorage
-  });
+  }, []);
 
   useEffect(() => {
     gameRef.current.subscribe((data) => {
       setGameData(data);
     });
-  });
+  }, []);
 
   // Set up actions and merge with data
   throw "TODO";
